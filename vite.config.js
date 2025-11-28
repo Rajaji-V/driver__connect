@@ -3,5 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/driver__connect/',   // 👈 This fixes GitHub Pages routing
+  server: {
+    port: 5173,
+  }
 });

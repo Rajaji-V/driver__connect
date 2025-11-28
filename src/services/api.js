@@ -1,17 +1,22 @@
 import axios from 'axios';
 
-// Use environment variable OR fallback localhost for development
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// -----------------------------
+// API URL
+// -----------------------------
+// Use environment variable if set, otherwise fallback to your deployed backend
+export const API_URL = import.meta.env.VITE_API_URL || "https://driverconnect.onrender.com/api";
 
-// Base URL without `/api`
+// Base URL without `/api` for generating absolute URLs
 export const API_BASE = API_URL.replace(/\/?api$/, '');
 
-// Create axios instance with correct base URL
+// -----------------------------
+// Axios instance
+// -----------------------------
 const api = axios.create({
     baseURL: API_URL
 });
 
-// Add token to headers
+// Add token to all requests
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -20,7 +25,9 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// ------- AUTH -------
+// -----------------------------
+// Auth Service
+// -----------------------------
 export const authService = {
     register: async (userData) => {
         const response = await api.post('/auth/register', userData);
@@ -30,7 +37,7 @@ export const authService = {
         }
         return response.data;
     },
-    
+
     login: async (credentials) => {
         const response = await api.post('/auth/login', credentials);
         if (response.data.token) {
@@ -46,7 +53,9 @@ export const authService = {
     }
 };
 
-// ------- JOBS -------
+// -----------------------------
+// Job Service
+// -----------------------------
 export const jobService = {
     getJobs: () => api.get('/jobs'),
     createJob: (jobData) => api.post('/jobs', jobData),
@@ -57,13 +66,17 @@ export const jobService = {
     deleteJob: (jobId) => api.delete(`/jobs/${jobId}`)
 };
 
-// ------- PROFILE -------
+// -----------------------------
+// Profile Service
+// -----------------------------
 export const profileService = {
     getMyProfile: () => api.get('/profile'),
     upsertMyProfile: (data) => api.post('/profile', data)
 };
 
-// ------- UPLOAD -------
+// -----------------------------
+// Upload Service
+// -----------------------------
 export const uploadService = {
     uploadFile: async (file) => {
         const form = new FormData();
@@ -79,7 +92,9 @@ export const uploadService = {
     }
 };
 
-// ------- ADMIN -------
+// -----------------------------
+// Admin Service
+// -----------------------------
 export const adminService = {
     getStats: () => api.get('/admin/stats')
 };

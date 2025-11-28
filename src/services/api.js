@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api';
-const API_BASE = API_URL.replace(/\/?api$/, '');
+// Use environment variable OR fallback localhost for development
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-// Create axios instance with base URL
+// Base URL without `/api`
+export const API_BASE = API_URL.replace(/\/?api$/, '');
+
+// Create axios instance with correct base URL
 const api = axios.create({
-    baseURL: API
+    baseURL: API_URL
 });
 
-// Add token to requests if available
+// Add token to headers
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -17,6 +20,7 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+// ------- AUTH -------
 export const authService = {
     register: async (userData) => {
         const response = await api.post('/auth/register', userData);
@@ -42,34 +46,40 @@ export const authService = {
     }
 };
 
+// ------- JOBS -------
 export const jobService = {
     getJobs: () => api.get('/jobs'),
     createJob: (jobData) => api.post('/jobs', jobData),
     applyForJob: (jobId) => api.post(`/jobs/${jobId}/apply`),
-    updateApplication: (jobId, applicationId, status) => 
+    updateApplication: (jobId, applicationId, status) =>
         api.put(`/jobs/${jobId}/applications/${applicationId}`, { status }),
     updateJobStatus: (jobId, status) => api.put(`/jobs/${jobId}/status`, { status }),
-    deleteJob: (jobId) => api.delete(`/jobs/${jobId}`),
+    deleteJob: (jobId) => api.delete(`/jobs/${jobId}`)
 };
 
+// ------- PROFILE -------
 export const profileService = {
     getMyProfile: () => api.get('/profile'),
-    upsertMyProfile: (data) => api.post('/profile', data),
+    upsertMyProfile: (data) => api.post('/profile', data)
 };
 
+// ------- UPLOAD -------
 export const uploadService = {
     uploadFile: async (file) => {
         const form = new FormData();
         form.append('file', file);
+
         const res = await api.post('/upload/single', form, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
+
         const rel = res.data.url || '';
         const abs = rel.startsWith('http') ? rel : `${API_BASE}${rel}`;
-        return { ...res.data, url: abs }; // ensure absolute url
+        return { ...res.data, url: abs };
     }
 };
 
+// ------- ADMIN -------
 export const adminService = {
-    getStats: () => api.get('/admin/stats'),
+    getStats: () => api.get('/admin/stats')
 };
